@@ -17,12 +17,11 @@ header h1{margin:0;font-size:30px;font-weight:800}
 header p{margin:8px 0 0;font-size:16px}
 .container{padding:22px;max-width:1350px;margin:auto}
 .grid{display:grid;grid-template-columns:1fr 1.7fr;gap:22px}
-.card{background:white;border-radius:20px;padding:22px;box-shadow:0 0 0 1px #ddd}
+.card{background:white;border-radius:20px;padding:22px}
 label{font-weight:700;font-size:14px}
 input,textarea,select{width:100%;padding:14px;margin:8px 0 14px;border:1px solid #ddd;border-radius:14px;font-size:16px;box-sizing:border-box;font-family:Inter}
 textarea{min-height:90px}
 button{background:#e00000;color:white;border:0;padding:13px 18px;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer}
-button:hover{opacity:.9}
 .btn-dark{background:#222}
 .btn-small{padding:9px 13px;font-size:13px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0}
@@ -41,7 +40,7 @@ button:hover{opacity:.9}
 <body>
 
 <header>
-<img class="logo" src="logo.png" onerror="this.src='https://raw.githubusercontent.com/AntonioCelotto/gestione-lavaggio-nda/main/logo.png'">
+<img class="logo" src="logo.png">
 <div>
 <h1>NDA • Gestione Lavori</h1>
 <p>Lista lavori condivisibile per segreteria, socia e collaboratori.</p>
@@ -110,14 +109,34 @@ button:hover{opacity:.9}
 </div>
 </div>
 
-<script>
-let lavori = JSON.parse(localStorage.getItem("lavoriNDA")) || [];
+<script type="module">
 
-function salvaStorage(){
-localStorage.setItem("lavoriNDA", JSON.stringify(lavori));
-}
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-function aggiungiRigaPagamento(){
+import {
+getFirestore,
+collection,
+addDoc,
+onSnapshot,
+deleteDoc,
+doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyAWCgmlIc_2uZIHhO7luB0jh-s61dIPODY",
+authDomain: "gestione-lavori-nda.firebaseapp.com",
+projectId: "gestione-lavori-nda",
+storageBucket: "gestione-lavori-nda.firebasestorage.app",
+messagingSenderId: "306286231559",
+appId: "1:306286231559:web:7637c373360d400462eaa2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let lavori = [];
+
+window.aggiungiRigaPagamento = function(){
 let box = document.getElementById("pagamentiForm");
 let div = document.createElement("div");
 div.className = "pagamento";
@@ -136,9 +155,9 @@ div.innerHTML = `
 <input class="dataPagamento" type="date">
 
 <label>Note pagamento</label>
-<input class="notePagamento" placeholder="Es. bonifico, contanti, POS">
+<input class="notePagamento" placeholder="Bonifico, contanti, POS">
 
-<button type="button" class="btn-dark btn-small" onclick="this.parentElement.remove()">Rimuovi pagamento</button>
+<button type="button" class="btn-dark btn-small" onclick="this.parentElement.remove()">Rimuovi</button>
 `;
 box.appendChild(div);
 }
@@ -153,7 +172,7 @@ let importo = r.querySelector(".importoPagamento").value;
 let data = r.querySelector(".dataPagamento").value;
 let note = r.querySelector(".notePagamento").value;
 
-if(importo || note || data){
+if(importo || data || note){
 pagamenti.push({tipo,importo,data,note});
 }
 });
@@ -161,12 +180,18 @@ pagamenti.push({tipo,importo,data,note});
 return pagamenti;
 }
 
-function resetPagamenti(){
-document.getElementById("pagamentiForm").innerHTML = "";
+function resetForm(){
+document.getElementById("nome").value="";
+document.getElementById("azienda").value="";
+document.getElementById("data").value="";
+document.getElementById("note").value="";
+document.getElementById("stato").value="Da fare";
+document.getElementById("priorita").value="Media";
+document.getElementById("pagamentiForm").innerHTML="";
 aggiungiRigaPagamento();
 }
 
-function salvaLavoro(){
+window.salvaLavoro = async function(){
 let nome = document.getElementById("nome").value.trim();
 let azienda = document.getElementById("azienda").value.trim();
 let data = document.getElementById("data").value;
@@ -180,24 +205,23 @@ alert("Inserisci il nome del lavoro");
 return;
 }
 
-lavori.push({nome,azienda,data,stato,priorita,note,pagamenti});
-salvaStorage();
+await addDoc(collection(db,"lavori"),{
+nome,
+azienda,
+data,
+stato,
+priorita,
+note,
+pagamenti,
+created: Date.now()
+});
 
-document.getElementById("nome").value="";
-document.getElementById("azienda").value="";
-document.getElementById("data").value="";
-document.getElementById("note").value="";
-document.getElementById("priorita").value="Media";
-resetPagamenti();
-
-mostraLavori();
+resetForm();
 }
 
-function eliminaLavoro(i){
+window.eliminaLavoro = async function(id){
 if(confirm("Vuoi eliminare questo lavoro?")){
-lavori.splice(i,1);
-salvaStorage();
-mostraLavori();
+await deleteDoc(doc(db,"lavori",id));
 }
 }
 
@@ -206,7 +230,7 @@ let valore = parseFloat(n || 0);
 return valore.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
 }
 
-function mostraLavori(){
+window.mostraLavori = function(){
 let lista = document.getElementById("lista");
 let cerca = document.getElementById("cerca").value.toLowerCase();
 let filtro = document.getElementById("filtro").value;
@@ -217,8 +241,9 @@ document.getElementById("numOk").innerText = lavori.filter(l=>l.stato==="Complet
 
 lista.innerHTML="";
 
-lavori.forEach((lavoro,i)=>{
+lavori.forEach(lavoro=>{
 let testo = (lavoro.nome+" "+lavoro.azienda+" "+lavoro.note).toLowerCase();
+
 if(cerca && !testo.includes(cerca)) return;
 if(filtro!=="Tutti gli stati" && lavoro.stato!==filtro) return;
 
@@ -229,6 +254,7 @@ let pagamenti = lavoro.pagamenti || [];
 let totale = pagamenti.reduce((sum,p)=>sum + parseFloat(p.importo || 0),0);
 
 let htmlPagamenti = "";
+
 pagamenti.forEach(p=>{
 htmlPagamenti += `
 <div class="pagamento">
@@ -242,6 +268,7 @@ Note: ${p.note || "-"}
 lista.innerHTML += `
 <div class="job">
 <h3>${lavoro.nome}</h3>
+
 <p><b>Azienda:</b> ${lavoro.azienda || "-"}</p>
 <p><b>Data:</b> ${lavoro.data || "-"}</p>
 <p><b>Note:</b><br>${lavoro.note || "-"}</p>
@@ -255,14 +282,29 @@ ${htmlPagamenti || "<p>Nessun pagamento inserito.</p>"}
 </div>
 
 <br>
-<button class="btn-dark" onclick="eliminaLavoro(${i})">Elimina</button>
+<button class="btn-dark" onclick="eliminaLavoro('${lavoro.id}')">Elimina</button>
 </div>
 `;
 });
 }
 
-resetPagamenti();
+onSnapshot(collection(db,"lavori"), snapshot=>{
+lavori = [];
+
+snapshot.forEach(documento=>{
+lavori.push({
+id: documento.id,
+...documento.data()
+});
+});
+
+lavori.sort((a,b)=>(b.created || 0) - (a.created || 0));
+
 mostraLavori();
+});
+
+aggiungiRigaPagamento();
+
 </script>
 
 </body>
