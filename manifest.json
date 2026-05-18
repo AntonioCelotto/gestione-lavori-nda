@@ -1,0 +1,20 @@
+{
+  "name": "NDA Gestione Lavori",
+  "short_name": "NDA Lavori",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#05060a",
+  "theme_color": "#e00000",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
