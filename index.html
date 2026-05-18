@@ -21,9 +21,10 @@ header p{margin:8px 0 0;font-size:16px}
 label{font-weight:700;font-size:14px}
 input,textarea,select{width:100%;padding:14px;margin:8px 0 14px;border:1px solid #ddd;border-radius:14px;font-size:16px;box-sizing:border-box;font-family:Inter}
 textarea{min-height:90px}
-button{background:#e00000;color:white;border:0;padding:13px 18px;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer}
+button{background:#e00000;color:white;border:0;padding:13px 18px;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;margin:3px}
 .btn-dark{background:#222}
 .btn-small{padding:9px 13px;font-size:13px}
+.btn-green{background:#16a34a}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0}
 .stat{text-align:center;border:1px solid #ddd;border-radius:14px;padding:15px;font-size:18px}
 .stat b{font-size:30px}
@@ -59,8 +60,11 @@ button{background:#e00000;color:white;border:0;padding:13px 18px;border-radius:1
 <label>Cliente / azienda</label>
 <input id="azienda" placeholder="Azienda">
 
-<label>Data</label>
-<input id="data" type="date">
+<label>Data firma contratto / inizio lavori</label>
+<input id="dataInizio" type="date">
+
+<label>Data consegna lavori</label>
+<input id="dataConsegna" type="date">
 
 <label>Stato</label>
 <select id="stato">
@@ -183,7 +187,8 @@ return pagamenti;
 function resetForm(){
 document.getElementById("nome").value="";
 document.getElementById("azienda").value="";
-document.getElementById("data").value="";
+document.getElementById("dataInizio").value="";
+document.getElementById("dataConsegna").value="";
 document.getElementById("note").value="";
 document.getElementById("stato").value="Da fare";
 document.getElementById("priorita").value="Media";
@@ -194,7 +199,8 @@ aggiungiRigaPagamento();
 window.salvaLavoro = async function(){
 let nome = document.getElementById("nome").value.trim();
 let azienda = document.getElementById("azienda").value.trim();
-let data = document.getElementById("data").value;
+let dataInizio = document.getElementById("dataInizio").value;
+let dataConsegna = document.getElementById("dataConsegna").value;
 let stato = document.getElementById("stato").value;
 let priorita = document.getElementById("priorita").value;
 let note = document.getElementById("note").value.trim();
@@ -208,7 +214,8 @@ return;
 await addDoc(collection(db,"lavori"),{
 nome,
 azienda,
-data,
+dataInizio,
+dataConsegna,
 stato,
 priorita,
 note,
@@ -228,6 +235,27 @@ await deleteDoc(doc(db,"lavori",id));
 function euro(n){
 let valore = parseFloat(n || 0);
 return valore.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
+}
+
+function dataGoogle(d){
+return d.replaceAll("-","");
+}
+
+window.apriCalendario = function(nome, azienda, dataInizio, dataConsegna){
+if(!dataInizio){
+alert("Manca la data inizio lavori");
+return;
+}
+
+let fine = dataConsegna || dataInizio;
+
+let titolo = encodeURIComponent("NDA - " + nome);
+let dettagli = encodeURIComponent("Cliente/Azienda: " + (azienda || "-"));
+let date = dataGoogle(dataInizio) + "/" + dataGoogle(fine);
+
+let url = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + titolo + "&details=" + dettagli + "&dates=" + date;
+
+window.open(url, "_blank");
 }
 
 window.mostraLavori = function(){
@@ -270,7 +298,8 @@ lista.innerHTML += `
 <h3>${lavoro.nome}</h3>
 
 <p><b>Azienda:</b> ${lavoro.azienda || "-"}</p>
-<p><b>Data:</b> ${lavoro.data || "-"}</p>
+<p><b>Firma contratto / inizio:</b> ${lavoro.dataInizio || "-"}</p>
+<p><b>Consegna lavori:</b> ${lavoro.dataConsegna || "-"}</p>
 <p><b>Note:</b><br>${lavoro.note || "-"}</p>
 
 <span class="badge ${classeStato}">${lavoro.stato}</span>
@@ -282,6 +311,7 @@ ${htmlPagamenti || "<p>Nessun pagamento inserito.</p>"}
 </div>
 
 <br>
+<button class="btn-green" onclick="apriCalendario('${lavoro.nome}','${lavoro.azienda}','${lavoro.dataInizio}','${lavoro.dataConsegna}')">Calendario</button>
 <button class="btn-dark" onclick="eliminaLavoro('${lavoro.id}')">Elimina</button>
 </div>
 `;
