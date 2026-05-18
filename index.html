@@ -1,47 +1,47 @@
-Sì, facciamo così: nel tuo `index.html` cancella tutto e incolla questo codice aggiornato.
-
-Ho sistemato:
-
-* tolta scritta “Salvataggio locale”
-* tolta descrizione Firebase
-* placeholder “Lavoro”
-* placeholder “Azienda”
-* salvataggio corretto e lavori visibili sotto
-
-```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NDA • Gestione Lavori</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#05060a;color:#0b1b33}
-header{background:linear-gradient(90deg,#080808,#5c0707);color:white;padding:18px 30px;display:flex;gap:20px;align-items:center;border-bottom:3px solid red}
-.logo{width:92px;height:92px;border-radius:20px;background:#000;object-fit:contain;border:1px solid #333}
-header h1{margin:0;font-size:30px}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:#05060a;color:#07152b}
+header{background:linear-gradient(90deg,#070707,#5c0505);color:white;padding:18px 30px;display:flex;gap:20px;align-items:center;border-bottom:3px solid #e00000}
+.logo{width:94px;height:94px;border-radius:22px;background:#000;object-fit:contain;border:1px solid #333}
+header h1{margin:0;font-size:30px;font-weight:800}
 header p{margin:8px 0 0;font-size:16px}
-.container{padding:22px;max-width:1300px;margin:auto}
+.container{padding:22px;max-width:1350px;margin:auto}
 .grid{display:grid;grid-template-columns:1fr 1.7fr;gap:22px}
-.card{background:white;border-radius:18px;padding:22px;box-shadow:0 0 0 1px #ddd}
-input,textarea,select{width:100%;padding:14px;margin:8px 0 14px;border:1px solid #ddd;border-radius:14px;font-size:16px;box-sizing:border-box}
+.card{background:white;border-radius:20px;padding:22px;box-shadow:0 0 0 1px #ddd}
+label{font-weight:700;font-size:14px}
+input,textarea,select{width:100%;padding:14px;margin:8px 0 14px;border:1px solid #ddd;border-radius:14px;font-size:16px;box-sizing:border-box;font-family:Inter}
 textarea{min-height:90px}
-button{background:#e00000;color:white;border:0;padding:14px 20px;border-radius:14px;font-weight:bold;font-size:16px;cursor:pointer}
+button{background:#e00000;color:white;border:0;padding:13px 18px;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer}
 button:hover{opacity:.9}
+.btn-dark{background:#222}
+.btn-small{padding:9px 13px;font-size:13px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0}
 .stat{text-align:center;border:1px solid #ddd;border-radius:14px;padding:15px;font-size:18px}
 .stat b{font-size:30px}
 .job{border:1px solid #ddd;border-radius:16px;padding:16px;margin-top:14px;background:#fafafa}
-.badge{display:inline-block;padding:7px 12px;border-radius:20px;color:white;font-size:13px}
+.badge{display:inline-block;padding:7px 12px;border-radius:20px;color:white;font-size:13px;font-weight:700;margin:3px}
 .da{background:#f39c12}.corso{background:#007bff}.ok{background:#16a34a}
-.delete{background:#333;margin-top:10px}
-@media(max-width:800px){.grid{grid-template-columns:1fr}header{padding:15px}.logo{width:74px;height:74px}header h1{font-size:24px}}
+.alta{background:#dc2626}.media{background:#f59e0b}.bassa{background:#16a34a}
+.pagamento{border:1px dashed #ccc;border-radius:12px;padding:12px;margin:10px 0;background:#fff}
+.totali{background:#f4f4f4;border-radius:12px;padding:12px;margin-top:10px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}header{padding:15px}.logo{width:74px;height:74px}header h1{font-size:24px}.stats{grid-template-columns:1fr}}
 </style>
 </head>
+
 <body>
 
 <header>
-<img class="logo" src="https://raw.githubusercontent.com/AntonioCelotto/gestione-lavaggio-nda/main/logo.png">
+<img class="logo" src="logo.png" onerror="this.src='https://raw.githubusercontent.com/AntonioCelotto/gestione-lavaggio-nda/main/logo.png'">
 <div>
 <h1>NDA • Gestione Lavori</h1>
 <p>Lista lavori condivisibile per segreteria, socia e collaboratori.</p>
@@ -57,7 +57,7 @@ button:hover{opacity:.9}
 <label>Nome lavoro</label>
 <input id="nome" placeholder="Lavoro">
 
-<label>Cliente / luogo</label>
+<label>Cliente / azienda</label>
 <input id="azienda" placeholder="Azienda">
 
 <label>Data</label>
@@ -70,14 +70,26 @@ button:hover{opacity:.9}
 <option>Completato</option>
 </select>
 
+<label>Priorità</label>
+<select id="priorita">
+<option>Media</option>
+<option>Alta</option>
+<option>Bassa</option>
+</select>
+
 <label>Note</label>
 <textarea id="note" placeholder="Note del lavoro"></textarea>
 
+<h3>Pagamenti</h3>
+<div id="pagamentiForm"></div>
+<button type="button" class="btn-dark btn-small" onclick="aggiungiRigaPagamento()">+ Aggiungi pagamento</button>
+
+<br><br>
 <button onclick="salvaLavoro()">Salva lavoro</button>
 </div>
 
 <div class="card">
-<input id="cerca" placeholder="Cerca lavoro, cliente, note..." oninput="mostraLavori()">
+<input id="cerca" placeholder="Cerca lavoro, azienda, note..." oninput="mostraLavori()">
 
 <select id="filtro" onchange="mostraLavori()">
 <option>Tutti gli stati</option>
@@ -105,25 +117,78 @@ function salvaStorage(){
 localStorage.setItem("lavoriNDA", JSON.stringify(lavori));
 }
 
+function aggiungiRigaPagamento(){
+let box = document.getElementById("pagamentiForm");
+let div = document.createElement("div");
+div.className = "pagamento";
+div.innerHTML = `
+<label>Tipo pagamento</label>
+<select class="tipoPagamento">
+<option>Acconto</option>
+<option>Saldo</option>
+<option>Altro</option>
+</select>
+
+<label>Importo</label>
+<input class="importoPagamento" type="number" step="0.01" placeholder="€">
+
+<label>Data pagamento</label>
+<input class="dataPagamento" type="date">
+
+<label>Note pagamento</label>
+<input class="notePagamento" placeholder="Es. bonifico, contanti, POS">
+
+<button type="button" class="btn-dark btn-small" onclick="this.parentElement.remove()">Rimuovi pagamento</button>
+`;
+box.appendChild(div);
+}
+
+function leggiPagamenti(){
+let righe = document.querySelectorAll("#pagamentiForm .pagamento");
+let pagamenti = [];
+
+righe.forEach(r=>{
+let tipo = r.querySelector(".tipoPagamento").value;
+let importo = r.querySelector(".importoPagamento").value;
+let data = r.querySelector(".dataPagamento").value;
+let note = r.querySelector(".notePagamento").value;
+
+if(importo || note || data){
+pagamenti.push({tipo,importo,data,note});
+}
+});
+
+return pagamenti;
+}
+
+function resetPagamenti(){
+document.getElementById("pagamentiForm").innerHTML = "";
+aggiungiRigaPagamento();
+}
+
 function salvaLavoro(){
 let nome = document.getElementById("nome").value.trim();
 let azienda = document.getElementById("azienda").value.trim();
 let data = document.getElementById("data").value;
 let stato = document.getElementById("stato").value;
+let priorita = document.getElementById("priorita").value;
 let note = document.getElementById("note").value.trim();
+let pagamenti = leggiPagamenti();
 
 if(!nome){
 alert("Inserisci il nome del lavoro");
 return;
 }
 
-lavori.push({nome,azienda,data,stato,note});
+lavori.push({nome,azienda,data,stato,priorita,note,pagamenti});
 salvaStorage();
 
 document.getElementById("nome").value="";
 document.getElementById("azienda").value="";
 document.getElementById("data").value="";
 document.getElementById("note").value="";
+document.getElementById("priorita").value="Media";
+resetPagamenti();
 
 mostraLavori();
 }
@@ -136,18 +201,19 @@ mostraLavori();
 }
 }
 
+function euro(n){
+let valore = parseFloat(n || 0);
+return valore.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
+}
+
 function mostraLavori(){
 let lista = document.getElementById("lista");
 let cerca = document.getElementById("cerca").value.toLowerCase();
 let filtro = document.getElementById("filtro").value;
 
-let da = lavori.filter(l=>l.stato==="Da fare").length;
-let corso = lavori.filter(l=>l.stato==="In corso").length;
-let ok = lavori.filter(l=>l.stato==="Completato").length;
-
-document.getElementById("numDa").innerText=da;
-document.getElementById("numCorso").innerText=corso;
-document.getElementById("numOk").innerText=ok;
+document.getElementById("numDa").innerText = lavori.filter(l=>l.stato==="Da fare").length;
+document.getElementById("numCorso").innerText = lavori.filter(l=>l.stato==="In corso").length;
+document.getElementById("numOk").innerText = lavori.filter(l=>l.stato==="Completato").length;
 
 lista.innerHTML="";
 
@@ -156,7 +222,22 @@ let testo = (lavoro.nome+" "+lavoro.azienda+" "+lavoro.note).toLowerCase();
 if(cerca && !testo.includes(cerca)) return;
 if(filtro!=="Tutti gli stati" && lavoro.stato!==filtro) return;
 
-let classe = lavoro.stato==="Da fare" ? "da" : lavoro.stato==="In corso" ? "corso" : "ok";
+let classeStato = lavoro.stato==="Da fare" ? "da" : lavoro.stato==="In corso" ? "corso" : "ok";
+let classePriorita = lavoro.priorita==="Alta" ? "alta" : lavoro.priorita==="Media" ? "media" : "bassa";
+
+let pagamenti = lavoro.pagamenti || [];
+let totale = pagamenti.reduce((sum,p)=>sum + parseFloat(p.importo || 0),0);
+
+let htmlPagamenti = "";
+pagamenti.forEach(p=>{
+htmlPagamenti += `
+<div class="pagamento">
+<b>${p.tipo}</b> - ${euro(p.importo)}<br>
+Data: ${p.data || "-"}<br>
+Note: ${p.note || "-"}
+</div>
+`;
+});
 
 lista.innerHTML += `
 <div class="job">
@@ -164,16 +245,25 @@ lista.innerHTML += `
 <p><b>Azienda:</b> ${lavoro.azienda || "-"}</p>
 <p><b>Data:</b> ${lavoro.data || "-"}</p>
 <p><b>Note:</b><br>${lavoro.note || "-"}</p>
-<span class="badge ${classe}">${lavoro.stato}</span><br>
-<button class="delete" onclick="eliminaLavoro(${i})">Elimina</button>
+
+<span class="badge ${classeStato}">${lavoro.stato}</span>
+<span class="badge ${classePriorita}">Priorità ${lavoro.priorita || "Media"}</span>
+
+<div class="totali">
+<b>Pagamenti ricevuti:</b> ${euro(totale)}
+${htmlPagamenti || "<p>Nessun pagamento inserito.</p>"}
+</div>
+
+<br>
+<button class="btn-dark" onclick="eliminaLavoro(${i})">Elimina</button>
 </div>
 `;
 });
 }
 
+resetPagamenti();
 mostraLavori();
 </script>
 
 </body>
 </html>
-```
