@@ -1,20 +1,259 @@
-name: Jekyll site CI
+Copia tutto questo dentro al tuo `index.html` e salva.
+Ho tolto tutte le scritte “versione brandizzata” ecc.
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+```html
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-jobs:
-  build:
+<title>Gestione Lavori NDA</title>
 
-    runs-on: ubuntu-latest
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/AntonioCelotto/gestione-lavaggio-nda/main/logo.png">
 
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build the site in the jekyll/builder container
-      run: |
-        docker run \
-        -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
-        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/AntonioCelotto/gestione-lavaggio-nda/main/logo.png">
+
+<meta name="theme-color" content="#d90000">
+
+<style>
+
+body{
+font-family:Arial,sans-serif;
+background:#111;
+margin:0;
+padding:0;
+color:white;
+}
+
+header{
+background:#d90000;
+padding:20px;
+text-align:center;
+}
+
+header img{
+width:120px;
+}
+
+.container{
+padding:20px;
+max-width:900px;
+margin:auto;
+}
+
+.card{
+background:#1e1e1e;
+padding:15px;
+border-radius:12px;
+margin-bottom:15px;
+box-shadow:0 2px 10px rgba(0,0,0,0.3);
+}
+
+input, textarea, select{
+width:100%;
+padding:12px;
+margin-top:8px;
+margin-bottom:12px;
+border:none;
+border-radius:8px;
+font-size:16px;
+}
+
+button{
+background:#d90000;
+color:white;
+border:none;
+padding:12px 20px;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+}
+
+button:hover{
+opacity:0.9;
+}
+
+.status{
+padding:5px 10px;
+border-radius:8px;
+font-size:14px;
+display:inline-block;
+margin-top:10px;
+}
+
+.da-fare{
+background:orange;
+color:black;
+}
+
+.in-corso{
+background:#00aaff;
+}
+
+.completato{
+background:#00cc66;
+}
+
+.actions{
+margin-top:15px;
+display:flex;
+gap:10px;
+}
+
+h2{
+margin-top:0;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<img src="https://raw.githubusercontent.com/AntonioCelotto/gestione-lavaggio-nda/main/logo.png">
+<h1>Gestione Lavori NDA</h1>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Nuovo Lavoro</h2>
+
+<input type="text" id="titolo" placeholder="Titolo lavoro">
+
+<input type="text" id="cliente" placeholder="Cliente">
+
+<input type="date" id="data">
+
+<select id="stato">
+<option value="Da Fare">Da Fare</option>
+<option value="In Corso">In Corso</option>
+<option value="Completato">Completato</option>
+</select>
+
+<textarea id="note" placeholder="Note"></textarea>
+
+<button onclick="aggiungiLavoro()">Salva Lavoro</button>
+
+</div>
+
+<div id="listaLavori"></div>
+
+</div>
+
+<script>
+
+let lavori = JSON.parse(localStorage.getItem('lavori')) || [];
+
+function salvaDati(){
+localStorage.setItem('lavori', JSON.stringify(lavori));
+}
+
+function aggiungiLavoro(){
+
+const titolo = document.getElementById('titolo').value;
+const cliente = document.getElementById('cliente').value;
+const data = document.getElementById('data').value;
+const stato = document.getElementById('stato').value;
+const note = document.getElementById('note').value;
+
+if(!titolo){
+alert("Inserisci un titolo");
+return;
+}
+
+lavori.push({
+titolo,
+cliente,
+data,
+stato,
+note
+});
+
+salvaDati();
+mostraLavori();
+
+document.getElementById('titolo').value = '';
+document.getElementById('cliente').value = '';
+document.getElementById('data').value = '';
+document.getElementById('note').value = '';
+
+}
+
+function eliminaLavoro(index){
+
+if(confirm("Eliminare questo lavoro?")){
+
+lavori.splice(index,1);
+
+salvaDati();
+
+mostraLavori();
+
+}
+
+}
+
+function mostraLavori(){
+
+const lista = document.getElementById('listaLavori');
+
+lista.innerHTML = '';
+
+lavori.reverse().forEach((lavoro,index)=>{
+
+let classe = '';
+
+if(lavoro.stato === 'Da Fare'){
+classe = 'da-fare';
+}
+
+if(lavoro.stato === 'In Corso'){
+classe = 'in-corso';
+}
+
+if(lavoro.stato === 'Completato'){
+classe = 'completato';
+}
+
+lista.innerHTML += `
+
+<div class="card">
+
+<h2>${lavoro.titolo}</h2>
+
+<p><strong>Cliente:</strong> ${lavoro.cliente}</p>
+
+<p><strong>Data:</strong> ${lavoro.data}</p>
+
+<p><strong>Note:</strong><br>${lavoro.note}</p>
+
+<div class="status ${classe}">
+${lavoro.stato}
+</div>
+
+<div class="actions">
+
+<button onclick="eliminaLavoro(${lavori.length - 1 - index})">
+Elimina
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+mostraLavori();
+
+</script>
+
+</body>
+</html>
+```
